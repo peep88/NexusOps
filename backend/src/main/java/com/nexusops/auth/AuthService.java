@@ -73,14 +73,13 @@ public class AuthService {
     }
 
     public AuthTokens refresh(String refreshToken) {
-        UUID userId = refreshTokenRepository.findActiveUserId(hash(refreshToken));
+        UUID userId = refreshTokenRepository.consume(hash(refreshToken));
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
         }
         UserRecord user = userRepository.findById(userId)
                 .filter(candidate -> candidate.disabledAt() == null)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
-        refreshTokenRepository.revoke(hash(refreshToken));
         return issueTokens(user);
     }
 

@@ -1,12 +1,10 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:aa6cb33cf4c19c765cefcf48d96176258800870a9a1e930ad126200f9d825139
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-nexusops}
       POSTGRES_USER: ${POSTGRES_USER:-nexusops}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -21,9 +19,8 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-nexusops}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-nexusops}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
-    ports:
-      - "8080:8080"
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      NEXUSOPS_JWT_SECRET: ${NEXUSOPS_JWT_SECRET:?Set NEXUSOPS_JWT_SECRET in .env}
     depends_on:
       postgres:
         condition: service_healthy

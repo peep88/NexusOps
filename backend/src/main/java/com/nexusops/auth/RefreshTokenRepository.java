@@ -23,11 +23,15 @@ public class RefreshTokenRepository {
                 """, id, userId, tokenHash, OffsetDateTime.ofInstant(expiresAt, java.time.ZoneOffset.UTC));
     }
 
-    public UUID findActiveUserId(String tokenHash) {
+    public UUID consume(String tokenHash) {
         try {
             return jdbcTemplate.queryForObject("""
-                    SELECT user_id FROM refresh_tokens
-                    WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > CURRENT_TIMESTAMP
+                    UPDATE refresh_tokens
+                    SET revoked_at = CURRENT_TIMESTAMP
+                    WHERE token_hash = ?
+                      AND revoked_at IS NULL
+                      AND expires_at > CURRENT_TIMESTAMP
+                    RETURNING user_id
                     """, (rs, rowNum) -> rs.getObject("user_id", UUID.class), tokenHash);
         } catch (EmptyResultDataAccessException exception) {
             return null;
