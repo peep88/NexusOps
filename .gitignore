@@ -24,6 +24,7 @@ dist/
 coverage/
 *.tsbuildinfo
 *.class
+dependency-reduced-pom.xml
 
 # IDE and editor files
 .idea/

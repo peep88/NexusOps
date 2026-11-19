@@ -36,6 +36,18 @@ services:
     depends_on:
       - backend
 
+  agent:
+    profiles: ["agent"]
+    build:
+      context: ./agent
+    environment:
+      NEXUSOPS_SERVER_URL: http://backend:8080
+      NEXUSOPS_AGENT_ID: ${NEXUSOPS_AGENT_ID:-}
+      NEXUSOPS_AGENT_CREDENTIAL: ${NEXUSOPS_AGENT_CREDENTIAL:-}
+      NEXUSOPS_COLLECTION_INTERVAL_SECONDS: ${NEXUSOPS_COLLECTION_INTERVAL_SECONDS:-30}
+    depends_on:
+      - backend
+
 volumes:
   postgres-data:
 
