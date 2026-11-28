@@ -1,12 +1,18 @@
 import { FormEvent, useEffect, useState } from "react";
 import { AuthTokens, clearTokens, loadTokens, login, refresh, register, saveTokens } from "./api/auth";
 import { ApiRequestError } from "./api/client";
+import { fetchServerMetrics, MetricSample } from "./api/metrics";
 import { fetchServers, Server } from "./api/servers";
 import { fetchSystemStatus, SystemStatus } from "./api/system";
+import { MetricDashboard } from "./MetricDashboard";
 
 export function App() {
   const [status, setStatus] = useState<SystemStatus | null>(null);
   const [servers, setServers] = useState<Server[]>([]);
+  const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
+  const [metrics, setMetrics] = useState<MetricSample[]>([]);
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
   const [auth, setAuth] = useState<AuthTokens | null>(() => loadTokens());
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -41,6 +47,30 @@ export function App() {
         }
       }
       setError(reason instanceof Error ? reason.message : "Unable to load servers");
+    }
+  }
+
+  async function toggleMetrics(serverId: string) {
+    if (!auth || metricsLoading) {
+      return;
+    }
+    if (selectedServerId === serverId) {
+      setSelectedServerId(null);
+      setMetrics([]);
+      setMetricsError(null);
+      return;
+    }
+
+    setSelectedServerId(serverId);
+    setMetrics([]);
+    setMetricsError(null);
+    setMetricsLoading(true);
+    try {
+      setMetrics(await fetchServerMetrics(serverId, auth.accessToken));
+    } catch (reason: unknown) {
+      setMetricsError(reason instanceof Error ? reason.message : "Unable to load metrics");
+    } finally {
+      setMetricsLoading(false);
     }
   }
 
@@ -93,7 +123,27 @@ export function App() {
           {servers.length === 0 && !error && <p>No servers registered yet.</p>}
           <ul className="server-list">
             {servers.map((server) => (
-              <li key={server.id}><strong>{server.name}</strong><span>{server.hostname} · {server.status}</span></li>
+              <li key={server.id}>
+                <div className="server-summary">
+                  <div><strong>{server.name}</strong><span>{server.hostname} · {server.status}</span></div>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    aria-expanded={selectedServerId === server.id}
+                    disabled={metricsLoading}
+                    onClick={() => toggleMetrics(server.id)}
+                  >
+                    {selectedServerId === server.id ? "Hide metrics" : "View metrics"}
+                  </button>
+                </div>
+                {selectedServerId === server.id && (
+                  <div className="server-metrics" aria-live="polite">
+                    {metricsLoading ? <p>Loading metric samples…</p> : null}
+                    {metricsError ? <p className="error">{metricsError}</p> : null}
+                    {!metricsLoading && !metricsError ? <MetricDashboard samples={metrics} /> : null}
+                  </div>
+                )}
+              </li>
             ))}
           </ul>
         </section>

@@ -29,9 +29,8 @@ clear module boundaries prioritized over premature service decomposition.
 - Docker Compose deployment for the frontend, backend, database, and optional
   monitoring agent.
 
-The current dashboard supports authentication and server listing. Metric
-visualization, alert management, and incident workflows are planned and are not
-yet available.
+The dashboard supports authentication, server listing, and per-server recent
+metric trends and samples. Alert management and incident workflows are planned.
 
 ## Architecture
 
@@ -69,7 +68,7 @@ service is a future extension, not part of the current deployment.
 ### In progress: monitoring and telemetry
 
 - Complete agent configuration and resilient delivery.
-- Expand metric querying, aggregation, retention, and dashboard visualization.
+- Expand metric aggregation, retention, and dashboard visualization.
 - Improve agent and ingestion integration test coverage.
 
 ### Planned: alerting and incident response
@@ -107,6 +106,6 @@ frontend/   React and TypeScript application
 ## Project status
 
 NexusOps is an active portfolio project. Authentication, server management,
-metric ingestion, and the OSHI agent are implemented. Alerting, incident
-management, metric visualization, WebSockets, anomaly detection, and LLM
-analysis remain future work.
+metric ingestion, recent metric querying and visualization, and the OSHI agent
+are implemented. Alerting, incident management, WebSockets, anomaly detection,
+and LLM analysis remain future work.
