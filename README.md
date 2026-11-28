@@ -54,10 +54,10 @@ service is a future extension, not part of the current deployment.
 
 | Area | Technologies |
 |---|---|
-| Backend | Java 21, Spring Boot, Spring Security, JDBC |
+| Backend | Java 25, Spring Boot, Spring Security, JDBC |
 | Frontend | React, TypeScript, Vite |
 | Database | PostgreSQL, Flyway |
-| Monitoring agent | Java 21, OSHI |
+| Monitoring agent | Java 25, OSHI |
 | API | REST, JSON, JWT |
 | Packaging and local deployment | Docker, Docker Compose, Nginx |
 | Planned analytics | Python, scikit-learn |

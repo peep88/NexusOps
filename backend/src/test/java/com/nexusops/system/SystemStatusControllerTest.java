@@ -8,7 +8,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,7 +33,7 @@ class SystemStatusControllerTest {
                 .andExpect(jsonPath("$.meta.requestId").value("test-request"))
                 .andExpect(jsonPath("$.error").doesNotExist());
 
-        verify(jdbcTemplate).queryForObject(eq("SELECT 1"), eq(Integer.class));
+        verify(jdbcTemplate).queryForObject("SELECT 1", Integer.class);
     }
 }
 
