@@ -1,5 +1,6 @@
 package com.nexusops.metrics;
 
+import com.nexusops.alerts.AlertEvaluationService;
 import com.nexusops.server.AgentCredentialRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,10 @@ class MetricIngestionServiceTest {
             mock(AgentCredentialRepository.class);
     private final MetricRepository metricRepository =
             mock(MetricRepository.class);
+    private final AlertEvaluationService alertEvaluationService =
+            mock(AlertEvaluationService.class);
     private final MetricIngestionService service =
-            new MetricIngestionService(credentialRepository, metricRepository);
+            new MetricIngestionService(credentialRepository, metricRepository, alertEvaluationService);
 
     @Test
     void ingestsAuthenticatedMetricBatch() {
@@ -41,6 +44,7 @@ class MetricIngestionServiceTest {
         service.ingest("agent-1", "nxs_test", samples);
 
         verify(metricRepository).insertBatch(serverId, samples);
+        verify(alertEvaluationService).evaluate(serverId, samples);
         verify(credentialRepository).markServerSeen(serverId);
     }
 

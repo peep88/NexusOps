@@ -24,30 +24,38 @@ clear module boundaries prioritized over premature service decomposition.
 - Agent credential generation, rotation, and revocation; credentials are
   stored as hashes.
 - Authenticated agent heartbeats and bounded metric batch ingestion.
+- Per-server threshold rules for supported host metrics, with configurable
+  comparisons, thresholds, severity, and enabled state.
+- Sample-driven alert evaluation: a breach opens an alert immediately, and the
+  first recovery sample resolves it.
 - PostgreSQL persistence managed through Flyway migrations.
 - OSHI collection of CPU, memory, disk, network, and process metrics.
 - Docker Compose deployment for the frontend, backend, database, and optional
   monitoring agent.
 
-The dashboard supports authentication, server listing, and per-server recent
-metric trends and samples. Alert management and incident workflows are planned.
+The dashboard supports authentication, server listing, per-server recent
+metric trends and samples, alert-rule management, and recent open or resolved
+alerts. Incident grouping, assignment, notifications, and real-time updates
+remain planned.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    UI[React dashboard] -->|REST API| API[Spring Boot modular monolith]
+    UI[React dashboard] -->|REST API| API[Spring Boot modular monolith: Auth, Servers, Metrics, Alerts]
     Agent[Java OSHI agent] -->|Authenticated heartbeat and metric batches| API
-    API --> DB[(PostgreSQL)]
+    API -->|Persist metrics, rules, and alert history| DB[(PostgreSQL)]
     API -. future: live events .-> UI
     API -. future: anomaly analysis .-> ML[Python analysis service]
     ML -. future: incident context .-> LLM[LLM provider]
 ```
 
-The backend groups authentication, server management, metrics, and shared
-security/web infrastructure in one application. The monitoring agent is a
-separate executable because it runs on monitored hosts. A Python analysis
-service is a future extension, not part of the current deployment.
+The backend groups authentication, server management, metrics, alert
+evaluation, and shared security/web infrastructure in one application. Alert
+evaluation runs as part of metric ingestion, while rules and alert history are
+persisted in PostgreSQL. The monitoring agent is a separate executable
+because it runs on monitored hosts. A Python analysis service is a future
+extension, not part of the current deployment.
 
 ## Technology stack
 
@@ -71,12 +79,11 @@ service is a future extension, not part of the current deployment.
 - Expand metric aggregation, retention, and dashboard visualization.
 - Improve agent and ingestion integration test coverage.
 
-### Planned: alerting and incident response
+### In progress: alerting and incident response
 
-- Configurable alert rules and threshold evaluation.
-- Alert lifecycle and incident grouping.
-- Incident timelines, assignment, acknowledgement, and resolution.
-- Notifications through email or webhooks.
+- Add notification delivery through email or webhooks.
+- Add incident grouping and timelines, plus assignment and acknowledgement.
+- Expand alert lifecycle controls beyond sample-driven automatic recovery.
 
 ### Planned: real-time operations
 
@@ -106,6 +113,6 @@ frontend/   React and TypeScript application
 ## Project status
 
 NexusOps is an active portfolio project. Authentication, server management,
-metric ingestion, recent metric querying and visualization, and the OSHI agent
-are implemented. Alerting, incident management, WebSockets, anomaly detection,
-and LLM analysis remain future work.
+metric ingestion, recent metric querying and visualization, per-server
+threshold alerting, and the OSHI agent are implemented. Incident management,
+WebSockets, anomaly detection, and LLM analysis remain future work.

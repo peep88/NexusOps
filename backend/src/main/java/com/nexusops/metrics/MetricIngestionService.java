@@ -1,8 +1,10 @@
 package com.nexusops.metrics;
 
+import com.nexusops.alerts.AlertEvaluationService;
 import com.nexusops.server.AgentCredentialRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
@@ -16,13 +18,16 @@ import java.util.UUID;
 public class MetricIngestionService {
     private final AgentCredentialRepository credentialRepository;
     private final MetricRepository metricRepository;
+    private final AlertEvaluationService alertEvaluationService;
 
     public MetricIngestionService(
             AgentCredentialRepository credentialRepository,
-            MetricRepository metricRepository
+            MetricRepository metricRepository,
+            AlertEvaluationService alertEvaluationService
     ) {
         this.credentialRepository = credentialRepository;
         this.metricRepository = metricRepository;
+        this.alertEvaluationService = alertEvaluationService;
     }
 
     public UUID authenticate(String agentId, String credential) {
@@ -38,6 +43,7 @@ public class MetricIngestionService {
         credentialRepository.markServerSeen(serverId);
     }
 
+    @Transactional
     public void ingest(String agentId, String credential, List<MetricSample> samples) {
         UUID serverId = authenticate(agentId, credential);
         if (samples == null || samples.isEmpty()) {
@@ -47,6 +53,7 @@ public class MetricIngestionService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Metric batch exceeds 1000 samples");
         }
         metricRepository.insertBatch(serverId, samples);
+        alertEvaluationService.evaluate(serverId, samples);
         credentialRepository.markServerSeen(serverId);
     }
 

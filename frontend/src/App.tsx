@@ -4,6 +4,7 @@ import { ApiRequestError } from "./api/client";
 import { fetchServerMetrics, MetricSample } from "./api/metrics";
 import { fetchServers, Server } from "./api/servers";
 import { fetchSystemStatus, SystemStatus } from "./api/system";
+import { AlertPanel } from "./AlertPanel";
 import { MetricDashboard } from "./MetricDashboard";
 
 export function App() {
@@ -133,7 +134,7 @@ export function App() {
                     disabled={metricsLoading}
                     onClick={() => toggleMetrics(server.id)}
                   >
-                    {selectedServerId === server.id ? "Hide metrics" : "View metrics"}
+                    {selectedServerId === server.id ? "Hide details" : "View metrics & alerts"}
                   </button>
                 </div>
                 {selectedServerId === server.id && (
@@ -141,6 +142,11 @@ export function App() {
                     {metricsLoading ? <p>Loading metric samples…</p> : null}
                     {metricsError ? <p className="error">{metricsError}</p> : null}
                     {!metricsLoading && !metricsError ? <MetricDashboard samples={metrics} /> : null}
+                    <AlertPanel
+                      serverId={server.id}
+                      accessToken={auth.accessToken}
+                      canManage={auth.role === "ADMIN" || auth.role === "OPERATOR"}
+                    />
                   </div>
                 )}
               </li>
